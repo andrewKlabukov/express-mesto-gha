@@ -1,37 +1,35 @@
-const { JWT_SECRET = 'dev-key' } = process.env;
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const ValidationError = require('../errors/ValidationError');
-const NotFoundError = require('../errors/NotFound');
-const ConflictError = require('../errors/Conflict');
+const NotFoundError = require('../errors/NotFoundError');
+const BadRequestError = require('../errors/BadRequestError');
+const ConflictingRequestError = require('../errors/ConflictingRequestError');
+const UnauthorizedRequestError = require('../errors/UnauthorizedRequestError');
 
 const createUser = (req, res, next) => {
   const {
-    name, about, avatar, email, password,
+    email,
+    password,
+    name,
+    about,
+    avatar,
   } = req.body;
-
   bcrypt.hash(password, 10)
-    .then((hash) => User.create({
+    .then((hashedPassword) => User.create({
+      email,
+      password: hashedPassword,
       name,
       about,
       avatar,
-      email,
-      password: hash,
     }))
-    .then((user) => res.status(201).send({
-      data: {
-        name: user.name,
-        about: user.about,
-        avatar: user.avatar,
-        email: user.email,
-      },
-    }))
+    .then((user) => {
+      res.send({ data: user });
+    })
     .catch((err) => {
-      if (err.code === 11000) {
-        next(new ConflictError('Пользователь с таким email уже существует'));
-      } else if (err.name === 'ValidationError') {
-        next(new ValidationError('Переданы некорректные данные'));
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError('Переданы некорректные данные'));
+      } else if (err.code === 11000) {
+        next(new ConflictingRequestError('Добавление пользователя с существующим email в БД'));
       } else {
         next(err);
       }
@@ -40,68 +38,102 @@ const createUser = (req, res, next) => {
 
 const login = (req, res, next) => {
   const { email, password } = req.body;
-  return User.findUserByCredentials(email, password)
+  User.findOne({ email })
+    .select('+password')
+    .orFail((new UnauthorizedRequestError('Проблема с аутентификацией или авторизацией')))
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
-      res.cookie('jwt', token, {
-        maxAge: 3600000 * 24 * 7,
-        httpOnly: true,
-        sameSite: true,
-      })
-        .send({ token });
+      bcrypt.compare(password, user.password)
+        .then((isUserValid) => {
+          if (isUserValid) {
+            const token = jwt.sign(
+              {
+                _id: user._id,
+              },
+              'SECRET',
+              { expiresIn: '7d' },
+            );
+            res.send({ token });
+          } else {
+            next(new UnauthorizedRequestError('Проблема с аутентификацией или авторизацией'));
+          }
+        });
     })
-    .catch(next);
-};
-
-const getProfile = (req, res, next) => {
-  User.findById(req.user._id)
-    .then((user) => res.send(user))
-    .catch(next);
+    .catch((err) => {
+      next(err);
+    });
 };
 
 const getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send(users))
-    .catch(next);
+    .catch((err) => {
+      next(err);
+    });
+};
+
+const getUserInfo = (req, res, next) => {
+  User.findById(req.user._id)
+    .then((user) => {
+      if (!user) {
+        next(new NotFoundError('Пользователь не найден'));
+      } else {
+        res.send(user);
+      }
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(new BadRequestError('Переданы некорректные данные'));
+      } else {
+        next(err);
+      }
+    });
 };
 
 const getUserById = (req, res, next) => {
-  User.findById(req.params.userId)
-    .orFail(() => new NotFoundError('Пользователь по указанному _id не найден'))
-    .then((user) => res.send(user))
+  const { id } = req.params;
+  User.findById(id)
+    .then((user) => {
+      if (!user) {
+        next(new NotFoundError('Пользователь не найден'));
+      } else {
+        res.send(user);
+      }
+    })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(new ValidationError('Переданы некорректные данные'));
+        next(new BadRequestError('Переданы некорректные данные'));
       } else {
         next(err);
       }
     });
 };
 
-const updateProfile = (req, res, next) => {
-  const { name, about } = req.body;
-
-  User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
-    .orFail(() => new NotFoundError('Пользователь по указанному _id не найден'))
-    .then((user) => res.send(user))
+const updateUserProfile = (req, res, next) => {
+  User.findByIdAndUpdate(req.user._id, {
+    $set: { name: req.body.name, about: req.body.about },
+  }, { runValidators: true, new: true })
+    .then(() => {
+      res.status(200).send({ name: req.body.name, about: req.body.about });
+    })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new ValidationError('Переданы некорректные данные.'));
+        next(new BadRequestError('Переданы некорректные данные'));
       } else {
         next(err);
       }
     });
 };
 
-const updateAvatar = (req, res, next) => {
-  const { avatar } = req.body;
-
-  User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
-    .orFail(() => new NotFoundError('Пользователь по указанному _id не найден'))
-    .then((user) => res.send(user))
+const updateUserAvatar = (req, res, next) => {
+  User.findByIdAndUpdate(req.user._id, {
+    $set: { avatar: req.body.avatar },
+  }, { runValidators: true, new: true })
+    .then(() => {
+      res.send({ avatar: req.body.avatar });
+    })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new ValidationError('Переданы некорректные данные.'));
+        next(new BadRequestError('Переданы некорректные данные'));
       } else {
         next(err);
       }
@@ -109,11 +141,11 @@ const updateAvatar = (req, res, next) => {
 };
 
 module.exports = {
-  createUser,
   login,
-  getProfile,
+  createUser,
   getUsers,
+  getUserInfo,
   getUserById,
-  updateProfile,
-  updateAvatar,
+  updateUserProfile,
+  updateUserAvatar,
 };
