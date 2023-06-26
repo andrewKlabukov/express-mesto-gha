@@ -1,8 +1,8 @@
-class UnauthorizedRequestError extends Error {
+const { STATUS_CODES } = require('../errors/');
+
+module.exports = class UnauthorizedError extends Error {
   constructor(message) {
     super(message);
-    this.statusCode = 401;
+    this.statusCode = STATUS_CODES.UNAUTHORIZED;
   }
-}
-
-module.exports = UnauthorizedRequestError;
+};

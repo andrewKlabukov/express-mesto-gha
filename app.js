@@ -1,42 +1,51 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
-
 const { errors } = require('celebrate');
+const bodyParser = require('body-parser');
+const userRouter = require('./routes/users');
+const cardRouter = require('./routes/cards');
+const auth = require('./middlewares/auth');
+const { createUser, login } = require('./controllers/users');
+const { signinValidator, signupValidator } = require('./middlewares/validation');
+const NotFoundError = require('./utils/errors/NotFoundError');
 
-const { PORT = 3000 } = process.env;
+const { PORT = 3000, MONGO_URL = 'mongodb://127.0.0.1/mestodb' } = process.env;
 
 const app = express();
 
-const { userRoutes } = require('./routes/users');
-const { cardRoutes } = require('./routes/cards');
-const { login, createUser } = require('./controllers/users');
-const auth = require('./middlewares/auth');
-const errorHandler = require('./middlewares/error');
-const NotFoundError = require('./errors/NotFoundError');
-const { validateUserBody, validateAuthentication } = require('./validators');
+mongoose.connect(MONGO_URL)
+  .then(() => console.log('База данных подключена'))
+  .catch((err) => console.log('Ошибка подключения к БД', err));
+
+mongoose.set({ runValidators: true });
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.post('/signin', validateAuthentication, login);
-app.post('/signup', validateUserBody, createUser);
+app.post('/signin', signinValidator, login);
+app.post('/signup', signupValidator, createUser);
+
 app.use(auth);
-app.use('/users', userRoutes);
-app.use('/cards', cardRoutes);
-app.all('*', (req, res, next) => {
-  next(new NotFoundError('Неправильный путь'));
+app.use('/', userRouter);
+app.use('/', cardRouter);
+
+app.all('/*', (req, res, next) => {
+  next(new NotFoundError('Страница не существует'));
 });
 
 app.use(errors());
+app.use((err, req, res, next) => {
+  const {
+    statusCode = 500,
+    message,
+  } = err;
+  res.status(statusCode)
+    .send({
+      message: statusCode === 500 ? 'На сервере произошла ошибка' : message,
+    });
+  next();
+});
 
-app.use(errorHandler);
-
-async function main() {
-  await mongoose.connect('mongodb://localhost:27017/mestodb');
-
-  await app.listen(PORT, () => {
-    console.log(`App listening on port ${PORT}`);
-  });
-}
-main();
+app.listen(PORT, () => {
+  console.log(`App listening on port ${PORT}`);
+});
