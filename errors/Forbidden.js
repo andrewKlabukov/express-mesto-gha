@@ -1,4 +1,4 @@
-const { STATUS_CODES } = require('../constants');
+const { STATUS_CODES } = require('../utils/constants');
 
 module.exports = class NotFoundError extends Error {
   constructor(message) {
