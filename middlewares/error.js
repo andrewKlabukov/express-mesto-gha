@@ -6,4 +6,4 @@ module.exports = (err, req, res, next) => {
   next();
 };
 
-module.exports = errorHandler;
+module.exports = error;

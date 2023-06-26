@@ -6,7 +6,7 @@ const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 const { errors } = require('celebrate');
 const routes = require('./routes/index');
-const errorHandler = require('./middlewares/errorHandler');
+const error = require('./middlewares/error');
 
 const { PORT = 3000 } = process.env;
 
@@ -31,7 +31,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/mestodb');
 app.use(routes);
 
 app.use(errors());
-app.use(errorHandler);
+app.use(error);
 
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console
