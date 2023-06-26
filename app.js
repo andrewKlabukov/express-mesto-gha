@@ -12,7 +12,7 @@ const { userRoutes } = require('./routes/users');
 const { cardRoutes } = require('./routes/cards');
 const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
-const errorHandler = require('./middlewares/errorHandler');
+const errorHandler = require('./middlewares/error');
 const NotFoundError = require('./errors/NotFoundError');
 const { validateUserBody, validateAuthentication } = require('./validators');
 
