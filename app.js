@@ -7,7 +7,7 @@ const cardRouter = require('./routes/cards');
 const auth = require('./middlewares/auth');
 const { createUser, login } = require('./controllers/users');
 const { signinValidator, signupValidator } = require('./middlewares/validation');
-const NotFoundError = require('./utils/errors/NotFoundError');
+const NotFoundError = require('./errors/NotFoundError');
 
 const { PORT = 3000, MONGO_URL = 'mongodb://127.0.0.1/mestodb' } = process.env;
 
