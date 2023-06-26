@@ -1,8 +1,8 @@
 const Card = require('../models/card');
 const { STATUS_CODES } = require('../utils/constants');
-const BadRequestError = require('../utils/errors/BadRequestError');
-const NotFoundError = require('../utils/errors/NotFoundError');
-const ForbiddenError = require('../utils/errors/ForbiddenError');
+const BadRequestError = require('../errors/BadRequestError');
+const NotFoundError = require('../errors/NotFoundError');
+const ForbiddenError = require('../errors/ForbiddenError');
 
 const getCards = (req, res, next) => {
   Card.find({})
