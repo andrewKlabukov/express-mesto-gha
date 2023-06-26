@@ -1,8 +1,8 @@
-const { STATUS_CODES } = require('../utils/constants');
+const { STATUS_CODES } = require('../constants');
 
-module.exports = class NotFoundError extends Error {
+module.exports = class ForbiddenError extends Error {
   constructor(message) {
     super(message);
-    this.statusCode = STATUS_CODES.NOT_FOUND;
+    this.statusCode = STATUS_CODES.FORBIDDEN;
   }
 };
