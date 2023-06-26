@@ -9,7 +9,6 @@ const cardSchema = new mongoose.Schema({
   },
   link: {
     type: String,
-    // eslint-disable-next-line no-useless-escape
     match: (/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/),
     required: true,
   },
