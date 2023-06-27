@@ -8,7 +8,6 @@ const { signToken } = require('../utils/jwtAuth');
 
 const SALT_ROUNDS = 10;
 
-// вернуть всех пользователей
 const getUsers = (req, res, next) => {
   userModel
     .find({})
@@ -16,7 +15,6 @@ const getUsers = (req, res, next) => {
     .catch(next);
 };
 
-// вернуть информацию о текущем пользователе
 const getUserMe = (req, res, next) => {
   const owner = req.user._id;
   userModel
@@ -30,7 +28,6 @@ const getUserMe = (req, res, next) => {
     .catch(next);
 };
 
-// вернуть пользователя по _id
 const getUserByID = (req, res, next) => {
   const id = req.params.userId;
   userModel
@@ -44,8 +41,6 @@ const getUserByID = (req, res, next) => {
     .catch(next);
 };
 
-// обновить профиль
-// { new: true, runValidators: true } - обновление, валидация
 const patchUserMe = (req, res, next) => {
   const owner = req.user._id;
   const { name, about } = req.body;
@@ -59,7 +54,6 @@ const patchUserMe = (req, res, next) => {
     .catch(next);
 };
 
-// обновить аватар
 const patchAvatar = (req, res, next) => {
   const owner = req.user._id;
   const { avatar } = req.body;
@@ -69,7 +63,6 @@ const patchAvatar = (req, res, next) => {
     .catch(next);
 };
 
-// регистрация пользователя (создать пользователя)
 const postUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
@@ -99,7 +92,6 @@ const postUser = (req, res, next) => {
     .catch(next);
 };
 
-// авторизация пользователя (проверить почту и пароль)
 const loginUser = (req, res, next) => {
   const { email, password } = req.body;
   userModel

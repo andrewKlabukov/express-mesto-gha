@@ -2,7 +2,6 @@ const cardModel = require('../models/card');
 const ForbiddenError = require('../errors/Forbidden_Error');
 const NotFoundError = require('../errors/Not_Found_Error');
 
-// вернуть все карточки
 const getCards = (req, res, next) => {
   cardModel
     .find({})
@@ -12,7 +11,6 @@ const getCards = (req, res, next) => {
     .catch(next);
 };
 
-// удалить карточку по идентификатору
 const deleteCardByID = (req, res, next) => {
   const owner = req.user._id;
   const id = req.params.cardId;
@@ -24,7 +22,7 @@ const deleteCardByID = (req, res, next) => {
     .then((card) => {
       const ownerCard = card.owner.toString();
       if (ownerCard !== owner) {
-        throw new ForbiddenError('Нельзя удалить чужую карточку');
+        throw new ForbiddenError('Невозможно удалить чужую карточку');
       }
       cardModel
         .findByIdAndRemove(req.params.cardId)
@@ -33,7 +31,6 @@ const deleteCardByID = (req, res, next) => {
     .catch(next);
 };
 
-// создать карточку
 const postCard = (req, res, next) => {
   const { name, link } = req.body;
   const owner = req.user._id;
@@ -43,13 +40,11 @@ const postCard = (req, res, next) => {
     .catch(next);
 };
 
-// поставить лайк карточке
 const putCardLike = (req, res, next) => {
   const owner = req.user._id;
   cardModel
     .findByIdAndUpdate(
       req.params.cardId,
-      // $addToSet - добавить _id в массив, если его там нет (Mongo)
       { $addToSet: { likes: owner } },
       { new: true },
     )
@@ -62,13 +57,11 @@ const putCardLike = (req, res, next) => {
     .catch(next);
 };
 
-// убрать лайк с карточки
 const deleteCardLike = (req, res, next) => {
   const owner = req.user._id;
   cardModel
     .findByIdAndUpdate(
       req.params.cardId,
-      // $pull - убрать _id из массива (Mongo)
       { $pull: { likes: owner } },
       { new: true },
     )
@@ -82,9 +75,9 @@ const deleteCardLike = (req, res, next) => {
 };
 
 module.exports = {
-  getCards,
   deleteCardByID,
-  postCard,
   putCardLike,
+  getCards,
+  postCard,
   deleteCardLike,
 };
