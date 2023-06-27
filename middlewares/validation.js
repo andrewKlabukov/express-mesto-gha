@@ -1,5 +1,5 @@
 const { Joi } = require('celebrate');
-const regexUrl = require('../utils/regex');
+const regexUrl = require('../utils/constants');
 
 const signInValidation = Joi.object().keys({
   email: Joi.string().email().required(),
