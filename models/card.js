@@ -1,7 +1,10 @@
 const mongoose = require('mongoose');
-const validator = require('validator');
-
+const isURL = require('validator/lib/isURL');
+// создать схему cardSchema
 const cardSchema = new mongoose.Schema({
+  // поля схемы карточки:
+  // имя карточки (name), ссылка на картинку (link), ссылка на модель автора карточки (owner)
+  // список лайкнувших пост пользователей (likes), дата создания (createdAt)
   name: {
     type: String,
     minlength: 2,
@@ -12,8 +15,8 @@ const cardSchema = new mongoose.Schema({
     type: String,
     required: true,
     validate: {
-      validator: (v) => validator.isURL(v),
-      message: 'Неправильный формат ссылки',
+      validator: (url) => isURL(url),
+      message: 'Недопустимый URL-адрес',
     },
   },
   owner: {
@@ -21,15 +24,15 @@ const cardSchema = new mongoose.Schema({
     ref: 'user',
     required: true,
   },
-  likes: {
-    type: [mongoose.Schema.Types.ObjectId],
+  likes: [{
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'user',
     default: [],
-  },
+  }],
   createdAt: {
     type: Date,
     default: Date.now,
   },
 });
-
+// создать модель card и экспортировать её
 module.exports = mongoose.model('card', cardSchema);

@@ -1,60 +1,29 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
+// ограничение кол-ва запросов (защита от DoS-атак)
 const rateLimit = require('express-rate-limit');
+// защита приложения от некоторых веб-уязвимостей
 const helmet = require('helmet');
-const cookieParser = require('cookie-parser');
-const { celebrate, errors } = require('celebrate');
-
-const { createUser, login } = require('./controllers/users');
-const { auth } = require('./middlewares/auth');
-const NotFoundError = require('./utils/errors/NotFoundError');
-const { signInValidation, signUpValidation } = require('./middlewares/validation');
-
-const { PORT = 3000 } = process.env;
-const app = express();
+const { errors } = require('celebrate');
+const router = require('./routes');
+const errorHandler = require('./middlewares/errorHandler');
 
 const limiter = rateLimit({
-  windowMs: 900000,
-  max: 100,
-  standardHeaders: true,
-  legacyHeaders: false,
+  windowMs: 15 * 60 * 1000, // "окно" - 15 минут
+  max: 100, // ограничить каждый IP-адрес 100 запросами за "окно" (за 15 минут)
 });
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+mongoose.connect('mongodb://127.0.0.1/mestodb');
 
-mongoose.connect('mongodb://127.0.0.1:27017/mestodb');
+const app = express();
+app.use(express.json());
 
 app.use(limiter);
 app.use(helmet());
-app.use(cookieParser());
+app.use('/', router);
+router.use(errors());
+app.use(errorHandler);
 
-app.post('/signin', celebrate({
-  body: signInValidation,
-}), login);
-
-app.post('/signup', celebrate({
-  body: signUpValidation,
-}), createUser);
-
-app.use(auth);
-
-app.use('/users', require('./routes/users'));
-app.use('/cards', require('./routes/cards'));
-
-app.use((req, res, next) => {
-  next(new NotFoundError('Страницы не существует'));
+app.listen(3000, () => {
+  console.log('Сервер запущен по порту 3000');
 });
-
-app.use(errors());
-
-app.use((err, req, res, next) => {
-  const { statusCode = 500, message } = err;
-  res.status(statusCode).send({
-    message: statusCode === 500 ? 'На сервере произошла ошибка' : message,
-  });
-  next();
-});
-
-app.listen(PORT);
