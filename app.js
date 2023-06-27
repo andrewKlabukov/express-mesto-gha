@@ -1,51 +1,60 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const { errors } = require('celebrate');
 const bodyParser = require('body-parser');
-const userRouter = require('./routes/users');
-const cardRouter = require('./routes/cards');
-const auth = require('./middlewares/auth');
-const { createUser, login } = require('./controllers/users');
-const { signinValidator, signupValidator } = require('./middlewares/validation');
-const NotFoundError = require('./errors/NotFoundError');
+const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
+const cookieParser = require('cookie-parser');
+const { celebrate, errors } = require('celebrate');
 
-const { PORT = 3000, MONGO_URL = 'mongodb://127.0.0.1/mestodb' } = process.env;
+const { createUser, login } = require('./controllers/user');
+const { auth } = require('./middlewares/auth');
+const NotFoundError = require('./utils/errors/NotFoundError');
+const { signInValidation, signUpValidation } = require('./middlewares/validation');
 
+const { PORT = 3000 } = process.env;
 const app = express();
 
-mongoose.connect(MONGO_URL)
-  .then(() => console.log('База данных подключена'))
-  .catch((err) => console.log('Ошибка подключения к БД', err));
-
-mongoose.set({ runValidators: true });
+const limiter = rateLimit({
+  windowMs: 900000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.post('/signin', signinValidator, login);
-app.post('/signup', signupValidator, createUser);
+mongoose.connect('mongodb://127.0.0.1:27017/mestodb');
+
+app.use(limiter);
+app.use(helmet());
+app.use(cookieParser());
+
+app.post('/signin', celebrate({
+  body: signInValidation,
+}), login);
+
+app.post('/signup', celebrate({
+  body: signUpValidation,
+}), createUser);
 
 app.use(auth);
-app.use('/', userRouter);
-app.use('/', cardRouter);
 
-app.all('/*', (req, res, next) => {
-  next(new NotFoundError('Страница не существует'));
+app.use('/users', require('./routes/user'));
+app.use('/cards', require('./routes/card'));
+
+app.use((req, res, next) => {
+  next(new NotFoundError('Страницы не существует'));
 });
 
 app.use(errors());
+
 app.use((err, req, res, next) => {
-  const {
-    statusCode = 500,
-    message,
-  } = err;
-  res.status(statusCode)
-    .send({
-      message: statusCode === 500 ? 'На сервере произошла ошибка' : message,
-    });
+  const { statusCode = 500, message } = err;
+  res.status(statusCode).send({
+    message: statusCode === 500 ? 'На сервере произошла ошибка' : message,
+  });
   next();
 });
 
-app.listen(PORT, () => {
-  console.log(`App listening on port ${PORT}`);
-});
+app.listen(PORT);
