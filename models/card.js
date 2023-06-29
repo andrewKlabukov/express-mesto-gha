@@ -1,10 +1,7 @@
-const mongoose = require('mongoose');
 const isURL = require('validator/lib/isURL');
-// создать схему cardSchema
+const mongoose = require('mongoose');
+
 const cardSchema = new mongoose.Schema({
-  // поля схемы карточки:
-  // имя карточки (name), ссылка на картинку (link), ссылка на модель автора карточки (owner)
-  // список лайкнувших пост пользователей (likes), дата создания (createdAt)
   name: {
     type: String,
     minlength: 2,
@@ -34,5 +31,6 @@ const cardSchema = new mongoose.Schema({
     default: Date.now,
   },
 });
-// создать модель card и экспортировать её
+
+
 module.exports = mongoose.model('card', cardSchema);

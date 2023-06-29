@@ -4,11 +4,11 @@ const { validatorCardByID, validatorPostCard, } = require('../middlewares/valida
 
 router.get('', getCards);
 
-router.delete('/:cardId', validatorCardByID, deleteCardByID);
+router.put('/:cardId/likes', validatorCardByID, putCardLike);
 
 router.post('', validatorPostCard, postCard);
 
-router.put('/:cardId/likes', validatorCardByID, putCardLike);
+router.delete('/:cardId', validatorCardByID, deleteCardByID);
 
 router.delete('/:cardId/likes', validatorCardByID, deleteCardLike);
 
