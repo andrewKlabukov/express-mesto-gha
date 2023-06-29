@@ -8,11 +8,10 @@ const {
 const { validatorSignIn, validatorSignUp } = require('../middlewares/validate');
 const auth = require('../middlewares/auth');
 
-// регистрация пользователя
 router.post('/signup', validatorSignUp, postUser);
-// авторизация пользователя
+
 router.post('/signin', validatorSignIn, loginUser);
-// авторизация
+
 router.use(auth);
 router.use('/users', userRouter);
 router.use('/cards', cardRouter);
