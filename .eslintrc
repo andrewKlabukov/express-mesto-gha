@@ -4,7 +4,6 @@
     "no-underscore-dangle":["error", { "allow": ["_id"] }],
     "no-console": 0,
     "eol-last": 0,
-    "no-multiple-empty-lines": ["error", { "max": 1, "maxEOF": 0 }],
-    "ObjectExpression": { "multiline": true, "minProperties": 1 }
+    "no-multiple-empty-lines": ["error", { "max": 1, "maxEOF": 0 }]
   }
 }
