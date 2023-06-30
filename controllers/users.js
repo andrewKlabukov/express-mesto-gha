@@ -52,7 +52,7 @@ const patchUserMe = (req, res, next) => {
     )
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.name === STATUS_CODES.BAD_REQUEST) {
+      if (err.name === "ValidationError") {
         next( new BadRequestError('Не корректные данные'))
       } else {
         next(err)
@@ -67,7 +67,7 @@ const patchAvatar = (req, res, next) => {
     .findByIdAndUpdate(owner, { avatar }, { new: true, runValidators: true })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.name === STATUS_CODES.BAD_REQUEST) {
+      if (err.name === "ValidationError") {
         next( new BadRequestError('Не корректные данные'))
       } else {
         next(err)
@@ -96,7 +96,7 @@ const postUser = (req, res, next) => {
         .catch((err) => {
           if (err.code === STATUS_CODES.MONGO_DUPLICATE_KEY_ERROR) {
             next(new ConflictingRequestError('Такой пользователь уже существует'));
-          } else if (err.name === STATUS_CODES.BAD_REQUEST) {
+          } else if (err.name === "ValidationError") {
             next( new BadRequestError('Не корректные данные'))
           }
 

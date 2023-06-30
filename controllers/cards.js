@@ -40,7 +40,7 @@ const postCard = (req, res, next) => {
     .create({ name, link, owner })
     .then((card) => res.send({ data: card }))
     .catch((err) => {
-      if (err.name === STATUS_CODES.BAD_REQUEST) {
+      if (err.name === "ValidationError") {
         next( new BadRequestError('Не корректные данные'))
       } else {
         next(err)
