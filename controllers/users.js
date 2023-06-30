@@ -96,7 +96,11 @@ const postUser = (req, res, next) => {
         .catch((err) => {
           if (err.code === STATUS_CODES.MONGO_DUPLICATE_KEY_ERROR) {
             next(new ConflictingRequestError('Такой пользователь уже существует'));
-          } else {
+          } else if (err.name === STATUS_CODES.BAD_REQUEST) {
+            next( new BadRequestError('Не корректные данные'))
+          }
+
+          else {
             next(err);
           }
         });
@@ -137,13 +141,3 @@ module.exports = {
   postUser,
   loginUser,
 };
-
-
-
-// .catch((err) => {
-//   if (err.name === STATUS_CODES.BAD_REQUEST) {
-//     next( new BadRequestError('Не корректные данные'))
-//   } else {
-//     next(err)
-//   }
-// });
