@@ -51,7 +51,13 @@ const patchUserMe = (req, res, next) => {
       { new: true, runValidators: true },
     )
     .then((user) => res.send({ data: user }))
-    .catch(next);
+    .catch((err) => {
+      if (err.name === STATUS_CODES.BAD_REQUEST) {
+        next( new BadRequestError('Не корректные данные'))
+      } else {
+        next(err)
+      }
+    });
 };
 
 const patchAvatar = (req, res, next) => {
@@ -60,7 +66,13 @@ const patchAvatar = (req, res, next) => {
   userModel
     .findByIdAndUpdate(owner, { avatar }, { new: true, runValidators: true })
     .then((user) => res.send({ data: user }))
-    .catch(next);
+    .catch((err) => {
+      if (err.name === STATUS_CODES.BAD_REQUEST) {
+        next( new BadRequestError('Не корректные данные'))
+      } else {
+        next(err)
+      }
+    });
 };
 
 const postUser = (req, res, next) => {
@@ -125,3 +137,13 @@ module.exports = {
   postUser,
   loginUser,
 };
+
+
+
+// .catch((err) => {
+//   if (err.name === STATUS_CODES.BAD_REQUEST) {
+//     next( new BadRequestError('Не корректные данные'))
+//   } else {
+//     next(err)
+//   }
+// });
