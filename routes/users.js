@@ -12,7 +12,6 @@ const {
   validatorPatchAvatar,
 } = require('../middlewares/validate');
 
-
 router.get('', getUsers);
 
 router.get('/me', validatorUserByID, getUserMe);
