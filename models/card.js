@@ -13,7 +13,7 @@ const cardSchema = new mongoose.Schema({
     required: true,
     validate: {
       validator: (url) => isURL(url),
-      message: 'Недопустимый адрес - URL',
+      message: 'Недопустимый адрес-URL',
     },
   },
   owner: {

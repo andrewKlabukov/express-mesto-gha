@@ -5,6 +5,7 @@ const UnauthorizedError = require('../errors/Unauthorized_Error');
 const ConflictingRequestError = require('../errors/Conflicting_Request_Error');
 const NotFoundError = require('../errors/Not_Found_Error');
 const { signToken } = require('../utils/jwtAuth');
+const BadRequestError = require('../errors/Bad_Request_Error')
 
 const SALT_ROUNDS = 10;
 

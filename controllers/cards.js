@@ -1,7 +1,6 @@
 const cardModel = require('../models/card');
 const ForbiddenError = require('../errors/Forbidden_Error');
 const NotFoundError = require('../errors/Not_Found_Error');
-const STATUS_CODES = require('../utils/costants');
 const BadRequestError = require('../errors/Bad_Request_Error');
 
 const getCards = (req, res, next) => {
