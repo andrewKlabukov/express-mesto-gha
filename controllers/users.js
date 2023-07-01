@@ -5,7 +5,7 @@ const UnauthorizedError = require('../errors/Unauthorized_Error');
 const ConflictingRequestError = require('../errors/Conflicting_Request_Error');
 const NotFoundError = require('../errors/Not_Found_Error');
 const { signToken } = require('../utils/jwtAuth');
-const BadRequestError = require('../errors/Bad_Request_Error')
+const BadRequestError = require('../errors/Bad_Request_Error');
 
 const SALT_ROUNDS = 10;
 
@@ -53,10 +53,10 @@ const patchUserMe = (req, res, next) => {
     )
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.name === "ValidationError") {
-        next( new BadRequestError('Не корректные данные'))
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError('Не корректные данные'));
       } else {
-        next(err)
+        next(err);
       }
     });
 };
@@ -68,10 +68,10 @@ const patchAvatar = (req, res, next) => {
     .findByIdAndUpdate(owner, { avatar }, { new: true, runValidators: true })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.name === "ValidationError") {
-        next( new BadRequestError('Не корректные данные'))
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError('Не корректные данные'));
       } else {
-        next(err)
+        next(err);
       }
     });
 };
@@ -97,11 +97,9 @@ const postUser = (req, res, next) => {
         .catch((err) => {
           if (err.code === STATUS_CODES.MONGO_DUPLICATE_KEY_ERROR) {
             next(new ConflictingRequestError('Такой пользователь уже существует'));
-          } else if (err.name === "ValidationError") {
-            next( new BadRequestError('Не корректные данные'))
-          }
-
-          else {
+          } else if (err.name === 'ValidationError') {
+            next(new BadRequestError('Не корректные данные'));
+          } else {
             next(err);
           }
         });
